@@ -7,28 +7,32 @@ from avalanche_extraction import *
 from avalanche_plotting import *
 
 #Initialize parameters
-gamma = 0.25
+gamma = 0.1
 ###delta =  0.8
 ###zeta = 3
 xini = 0.5
-T = 256
+T = 2048
 dt = 0.25
 transient = 20
-num_instances = 5
+num_instances = 15
 #Spin dynamics parameters
 check_initialization = False
 spin_tracker = False
 #Spin plotting parameters
 num_of_spins = 10
-plot_duration = 256
+plot_duration = 512
 #Avalanche extraction/plotting params
 ###time_window = 15*dt
 flip_axis = 0.0
 movie = False
 fit = None
+#Finite size scaling parameters
+fsscaling = True
+alpha = 1.5
+beta = 0.0
 
 #Spin dynamics/plotting and avalanche extraction (per instance) and avalanche plotting for (for entire ensemble)
-#####################################################################################################################
+######################################################################################################################################
 for delta in [0.6]: #[0.6, 0.75, 0.9]:
     for zeta in [2]: #[2, 3, 4]:
         for sz in [[32, 32], [64, 64], [96, 96]]:
@@ -49,18 +53,18 @@ for delta in [0.6]: #[0.6, 0.75, 0.9]:
             avalanche_plotting(general_params, 'temporal', 15*dt, flip_axis, fit)
             avalanche_plotting(general_params, 'spatial', 60*dt, flip_axis, fit)
             avalanche_plotting(general_params, 'temporal', 60*dt, flip_axis, fit)
-#####################################################################################################################
+######################################################################################################################################
 
 #Comparing avalanche size distributions across different sized lattices
-#####################################################################################################################
-        common_general_params = [gamma, var1, var2, xini, T, dt, transient, 'DATA_RAW']
+######################################################################################################################################
+        common_general_params = [gamma, delta, zeta, xini, T, dt, transient, 'DATA_RAW']
 
-        finite_size = [True, 1.5, 0.0]
+        finite_size = [fsscaling, alpha, beta]
 
-        plot_all_avalanches([[32, 32], [64, 64], [96, 96]], common_general_params, ['spatial', 5*dt, 0.0, False], finite_size)
-        plot_all_avalanches([[32, 32], [64, 64], [96, 96]], common_general_params, ['temporal', 5*dt, 0.0, False], finite_size)
-        plot_all_avalanches([[32, 32], [64, 64], [96, 96]], common_general_params, ['spatial', 15*dt, 0.0, False], finite_size)
-        plot_all_avalanches([[32, 32], [64, 64], [96, 96]], common_general_params, ['temporal', 15*dt, 0.0, False], finite_size)
-        plot_all_avalanches([[32, 32], [64, 64], [96, 96]], common_general_params, ['spatial', 60*dt, 0.0, False], finite_size)
-        plot_all_avalanches([[32, 32], [64, 64], [96, 96]], common_general_params, ['temporal', 60*dt, 0.0, False], finite_size)
-#####################################################################################################################
+        plot_all_avalanches([[32, 32], [64, 64], [96, 96]], common_general_params, ['spatial', 5*dt, flip_axis, False], finite_size)
+        plot_all_avalanches([[32, 32], [64, 64], [96, 96]], common_general_params, ['temporal', 5*dt, flip_axis, False], finite_size)
+        plot_all_avalanches([[32, 32], [64, 64], [96, 96]], common_general_params, ['spatial', 15*dt, flip_axis, False], finite_size)
+        plot_all_avalanches([[32, 32], [64, 64], [96, 96]], common_general_params, ['temporal', 15*dt, flip_axis, False], finite_size)
+        plot_all_avalanches([[32, 32], [64, 64], [96, 96]], common_general_params, ['spatial', 60*dt, flip_axis, False], finite_size)
+        plot_all_avalanches([[32, 32], [64, 64], [96, 96]], common_general_params, ['temporal', 60*dt, flip_axis, False], finite_size)
+######################################################################################################################################
