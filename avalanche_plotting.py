@@ -92,8 +92,8 @@ def avalanche_plotting(general_params, distribution_type, time_window, flip_axis
 def plot_all_avalanches(size_list, common_general_params, common_misc_params, finite_size):
 
     #Some formatting specfications (can be adjusted/added to)
-    plt.rcParams.update({'font.size': 22, 'legend.loc': 'lower left'})
-    ###plt.rcParams.update({'font.size': 22, 'legend.loc': 'upper right'})
+    ###plt.rcParams.update({'font.size': 22, 'legend.loc': 'lower left'})
+    plt.rcParams.update({'font.size': 22, 'legend.loc': 'upper right'})
     plt.subplots_adjust(bottom=0.2, left=0.2)
 
     #Initializes list of arrays, providing comprehensive data on all avalanche distributions
@@ -134,11 +134,12 @@ def plot_all_avalanches(size_list, common_general_params, common_misc_params, fi
 
     #Perform scale invariance analysis
     if finite_size[0] == True:
+        plt.rcParams.update({'legend.loc': 'upper left'})
         for i in range(len(size_list)):
             finite_size_x = [element/((list_of_arraysizes[i][0]*list_of_arraysizes[i][1])**finite_size[2]) for element in list_of_sizes[i]]
             finite_size_y = [a*b for a,b in zip([element**finite_size[1] for element in list_of_sizes[i]],list_of_percentages[i])]
 
-            plt.scatter(finite_size_x, finite_size_y, label=get_sz_string(sz))
+            plt.scatter(finite_size_x, finite_size_y, label=get_sz_string(size_list[i]))
 
         plt.xlabel(r'~$s/L^{%0.2f}$' % finite_size[2])
         plt.ylabel(r'~$s^{-%0.2f}$P(s)' % finite_size[1])
