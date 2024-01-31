@@ -55,21 +55,21 @@ def avalanche_extraction(general_params, spin, time_window, flip_axis, movie, in
 
                 #Provides list of nearest-neighbors given a spin's location in the lattice
                 if (i==0 and j==0): #top left corner
-                    neighbor_list = [[i, j+1], [i+1, j], [i, sz[1]-1], [sz[0]-1, j]]
+                    neighbor_list = [[i, j+1], [i+1, j]]
                 elif (i==0 and j==sz[1]-1): #top right corner
-                    neighbor_list = [[i, 0], [i+1, j], [i, j-1], [sz[0]-1, j]]
+                    neighbor_list = [[i+1, j], [i, j-1]]
                 elif (i==sz[0]-1 and j==0): #bottom left corner
-                    neighbor_list = [[i, j+1], [0, j], [i, sz[1]-1], [i-1, j]]
+                    neighbor_list = [[i, j+1], [i-1, j]]
                 elif (i==sz[0]-1 and j==sz[1]-1): #bottom right corner
-                    neighbor_list = [[i, 0], [0, j], [i, j-1], [i-1, j]]
+                    neighbor_list = [[i, j-1], [i-1, j]]
                 elif (i==0): #top edge
-                    neighbor_list = [[i, j+1], [i+1, j], [i, j-1], [sz[0]-1, j]]
+                    neighbor_list = [[i, j+1], [i+1, j], [i, j-1]]
                 elif (i==sz[0]-1): #bottom edge
-                    neighbor_list = [[i, j+1], [0, j], [i, j-1], [i-1, j]]
+                    neighbor_list = [[i, j+1], [i, j-1], [i-1, j]]
                 elif (j==0): #left edge
-                    neighbor_list = [[i, j+1], [i+1, j], [i, sz[1]-1], [i-1, j]]
+                    neighbor_list = [[i, j+1], [i+1, j], [i-1, j]]
                 elif (j==sz[1]-1): #right edge
-                    neighbor_list = [[i, 0], [i+1, j], [i, j-1], [i-1, j]]
+                    neighbor_list = [[i+1, j], [i, j-1], [i-1, j]]
                 else:
                     neighbor_list = [[i, j+1], [i+1, j], [i, j-1], [i-1, j]]
 
