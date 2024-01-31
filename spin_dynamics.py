@@ -88,9 +88,13 @@ def spin_dynamics(general_params, check_initialization, spin_tracker, instance_n
             #For example, the (2, 3) entry in "spin_right" would correspond to the current spin value at (2, 4) in the spin lattice array (since (2, 4) is directly to the right of (2, 3))
             #Since the dynamics are governed by nearest-neighbor interactions, this is a relatively efficient way to evolve the spins
             spin_up = np.roll(spin, 1, axis=0)
+            spin_up[0,:] = 0
             spin_down = np.roll(spin, -1, axis=0)
+            spin_down[-1,:] = 0
             spin_right = np.roll(spin, -1, axis=1)
+            spin_right[:,-1] = 0
             spin_left = np.roll(spin, 1, axis=1)
+            spin_left[:,0] = 0
 
             #Explicitly updates both the spin and memory variables based on their derivatives
             spin_deriv = (np.multiply(spin_coupling_up,spin_up) + np.multiply(spin_coupling_down,spin_down) + np.multiply(spin_coupling_right,spin_right) + np.multiply(spin_coupling_left,spin_left) - zeta*np.multiply(memory_up + memory_down + memory_right + memory_left,spin))
