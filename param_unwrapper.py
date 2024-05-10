@@ -11,7 +11,7 @@ def param_unwrapper(general_params):
     T = general_params[5]
     dt = general_params[6]
     transient = general_params[7]
-    subdirec = general_params[8]
-    param_string = get_param_string(sz, gamma, delta, zeta, xini, T, dt, subdirec)
+    subdirectory = general_params[8]
+    param_string = get_param_string(sz, gamma, delta, zeta, xini, T, dt, subdirectory)
 
     return sz, gamma, delta, zeta, xini, T, dt, transient, param_string

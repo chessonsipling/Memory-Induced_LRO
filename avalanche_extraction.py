@@ -4,39 +4,35 @@ import matplotlib.pyplot as plt
 from param_unwrapper import *
 from avalanche_writing import *
 
-#Extracts distribution of avalanches' sizes (spatial) and durations (temporal), given the trajectory of all lattice spins
+#Extracts distribution of avalanches' sizes, given the trajectory of all lattice spins
 #Does so by tracking each spin flip (the change of a continuously relaxed spin's sign), and updating an existing avalanche if that spin flip occured adjacent to recently flipped spin in that avalanche
-def avalanche_extraction(general_params, spin, time_window, flip_axis, movie, instance_num):
+def avalanche_extraction(general_params, spin, time_window, movie, instance_num, T_min=None, T_max=None):
 
     sz, gamma, delta, zeta, xini, T, dt, transient, param_string = param_unwrapper(general_params)
     
+    #Updates T_min and T_max to transient and T, respectively, if no arguments are passed
+    if T_min == None:
+        T_min = transient
+    if T_max == None:
+        T_max = T
+    
     avalanche_sizes = [] #distribution of spatial avalanche sizes
-    avalanche_durations = [] #distribution of temporal avalanche sizes (how long each avalanche lasts)
 
-    #Initializes an array which keeps track of the avalanche history at previous timestep
+    #Initializes an array which keeps track of the avalanche history at previous timesteps
     #This will allow us to verify when spin flips are induced by their nearest neighbors (a branching process)
-    #Each element characterizes a single avalanche, which has a running size, list of sites which flipped recently ("active" spins), a list of number of time steps since each active spin flipped, and a running duration
+    #Each element characterizes a single avalanche, which has a running size, a list of sites which flipped recently ("active" spins), a list of number of time steps since each active spin flipped, and a list of sites which flipped long ago ("passive" spins)
     recent_avalanches = []
 
-    #Initializes array which will offset spin values uniformly throughout the lattice (will help check for 'flips' relative to +/-flip_axis)
-    if flip_axis != 0:
-        axis_flips = flip_axis*np.ones((sz[0], sz[1]))
-
     #Iterates over each timestep of the spin configuration's evolution
-    for t in range(len(spin) - np.int(transient/dt) - 1):
+    for t in range(np.int(T_min/dt), np.int(T_max/dt)):
 
         #Generates "movie" file at each timestep to easily visualize spin flips
         if movie:
             movie_array = np.zeros((sz[0], sz[1]))
-            plt.imsave(param_string + '/' + str(instance_num) + 'movie_spin' + str(t) + '.png', spin[t+np.int(transient/dt)], cmap='RdYlBu')
+            plt.imsave(param_string + '/' + str(instance_num) + 'movie_spin' + str(t) + '.png', spin[t], cmap='RdYlBu')
 
-        #Establishes array of spin flips at each time step, with 1 indicating an upper-axis flip, -1 indicating a lower_axis flip, and 0 indicating no flip
-        if flip_axis != 0:
-            upper_spin_flips = np.where(np.multiply(spin[t+np.int(transient/dt)+1] - axis_flips, spin[t+np.int(transient/dt)] - axis_flips) < 0 , 1, 0)
-            lower_spin_flips = np.where(np.multiply(spin[t+np.int(transient/dt)+1] + axis_flips, spin[t+np.int(transient/dt)] + axis_flips) < 0 , -1, 0)
-            spin_flips = upper_spin_flips + lower_spin_flips
-        else:
-            spin_flips = np.where(np.multiply(spin[t+np.int(transient/dt)+1], spin[t+np.int(transient/dt)]) < 0 , 1, 0) #if the flip axis is 0, then a 1 indicates a flip
+        #Establishes array of spin flips at each time step, with 1 indicating a flip and 0 indicating no flip
+        spin_flips = np.where(np.multiply(spin[t+1], spin[t]) < 0 , 1, 0)
 
         #Only investigates a given timestep if a spin flip occurs
         if any(element == 1 for element in np.ndarray.flatten(spin_flips)) or any(element == -1 for element in np.ndarray.flatten(spin_flips)):
@@ -82,12 +78,11 @@ def avalanche_extraction(general_params, spin, time_window, flip_axis, movie, in
                     #Updates existing avalanches if the [i, j] flip has just occurred adjacent to one of their "active" (recently flipped) spins 
                     if any(site in avalanche[1] for site in neighbor_list):
                         #Verifies that the flipping spin is not already an active or passive spin in this avalanche
-                        if ([i, j] not in avalanche[1]) and ([i, j] not in avalanche[4]):
+                        if ([i, j] not in avalanche[1]) and ([i, j] not in avalanche[3]):
                             ###print('Neighbor found: ' + str(avalanche))
                             avalanche[0] += 1 #adds one to that avalanche's size
                             avalanche[1].append([i, j]) #Adds the newly flipped site to its corresponding list in the avalanche it is a part of
                             avalanche[2].append(0) #Specifies that 0 time has passed since this spin flipped
-                            avalanche[3] += 1 #Specifies that the duration over which this avalanche has existed increased by 1
                             no_neighbors = False
                             existing_avalanches.append(avalanche)
 
@@ -103,17 +98,17 @@ def avalanche_extraction(general_params, spin, time_window, flip_axis, movie, in
                                 combined_avalanche[1].append(avalanche[1][k])
                                 combined_avalanche[2].append(avalanche[2][k])
                     for avalanche in existing_avalanches:
-                        for k in range(len(avalanche[4])):
-                            if (avalanche[4][k] not in combined_avalanche[4]) and (avalanche[4][k] not in combined_avalanche[1]): #doesn't add duplicates, taking care to not add a "passive" spin if it's active in a previously merged avalanche
+                        for k in range(len(avalanche[3])):
+                            if (avalanche[3][k] not in combined_avalanche[3]) and (avalanche[3][k] not in combined_avalanche[1]): #doesn't add duplicates, taking care to not add a "passive" spin if it's active in a previously merged avalanche
                                 combined_avalanche[0] += 1
-                                combined_avalanche[4].append(avalanche[4][k])
+                                combined_avalanche[3].append(avalanche[3][k])
 
                         recent_avalanches.remove(avalanche) #removes all of the avalanches which have now combined from the recent_avalanches list
                     recent_avalanches.append(combined_avalanche) #replaces them with the new, combined avalanche
 
                 if no_neighbors:
                     ###print('Neighbor not found!')
-                    recent_avalanches.append([1, [[i, j]], [0], 1, []]) #creates a new avalanches of initial size 1, at site [i, j], in which the [i, j] site flip occurred 0 timesteps ago, so the avalanche altogether has lasted 1 timestep (and has no "passive" spins)
+                    recent_avalanches.append([1, [[i, j]], [0], []]) #creates a new avalanches of initial size 1, at site [i, j], in which the [i, j] site flip occurred 0 timesteps ago, and which has no "passive" spins
 
 
         ###print('Recent avalanches before updating: ' + str(recent_avalanches))
@@ -134,7 +129,7 @@ def avalanche_extraction(general_params, spin, time_window, flip_axis, movie, in
             #Removes each inactive spin, along with its duration indicator, from the list of active spins, adding them to the list of passive spins
             #(replaces each active spin with "-1", and then removes each "-1")
             for index in indices_to_remove:
-                avalanche[4].append(avalanche[1][index])
+                avalanche[3].append(avalanche[1][index])
                 avalanche[1][index] = -1
                 avalanche[2][index] = -1
             for i in range(len(indices_to_remove)):
@@ -146,23 +141,19 @@ def avalanche_extraction(general_params, spin, time_window, flip_axis, movie, in
             if avalanche[1] == [] and avalanche[2] == []:
                 ###print('Avalanche ends, updating avalanche sizes!')
                 avalanche_sizes.append(avalanche[0]) #adds final size of a given avalanche to the meta-counter
-                avalanche_durations.append(avalanche[3]) #adds final duration of a given avalanche to the meta-counter
                 recent_avalanches.remove(avalanche) #removes the avalanche from the list of recent avalanches
 
-        ###print('Recent avalanches at end of timestep (T = ' + str(float((t+np.int(transient/dt)+1)*dt))  + '): ' + str(recent_avalanches))
+        ###print('Recent avalanches at end of timestep (T = ' + str(float((t+1)*dt)) + '): ' + str(recent_avalanches))
         ###print('Current avalanche sizes: ' + str(avalanche_sizes))
-        ###print('Current avalanche durations: ' + str(avalanche_durations) + '\n')
 
 
     #Write remaining avalanches at end of simulation to avalanche_sizes
     for avalanche in recent_avalanches:
         avalanche_sizes.append(avalanche[0])
-        avalanche_durations.append(avalanche[3])
 
     #Write avalanche sizes to a file for easy extraction/plotting later
-    avalanche_writing(param_string, 'time_window' + str(time_window) + 'flip_axis' + str(flip_axis) + '_spatial', avalanche_sizes)
-    avalanche_writing(param_string, 'time_window' + str(time_window) + 'flip_axis' + str(flip_axis) + '_temporal', avalanche_durations)
+    avalanche_writing(param_string, 'time_window' + str(time_window) + '_' + str(T_min) + '_to_' + str(T_max), avalanche_sizes)
+ 
+    print('Instance ' + str(instance_num) + ' avalanches extracted')
 
-    print('Instance ' + str(instance_num) + ' avalanches extracted (local method)')
-
-    return avalanche_sizes, avalanche_durations
+    return avalanche_sizes
