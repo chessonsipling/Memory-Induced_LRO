@@ -1,1 +1,1 @@
-# Spin-Glasses-w-Memory
+# Memory-Induced_LRO
