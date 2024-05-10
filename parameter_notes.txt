@@ -1,99 +1,96 @@
-PARAMETER NOTES (in order, as outlined in exe_multi.py and exe_single.py)
+PARAMETER NOTES (in order, as outlined in exe.py)
 
 #####################################################################################################
-general_params[0] : Array size ([rows, columns])
--list of integers of length d, where d is dimension
--[32, 32], [64, 64], [96, 96], and [128, 128] are all reasonable sizes to consider
+size_list: List of array sizes, written as [[Array1#OfRows, Array1#OfColumns], [Array2#OfRows, Array2#OfColumns], ...]
+-[16, 16] and larger sizes are sufficient to show long-range order (LRO)
 
-general_params[1] : gamma (spin dynamics parameter)
+gamma: Spin dynamics parameter
 -float
--Smaller gamma means slower memory dynamics, so may have to increase T to compensate (very computational expensive to collect statistically significant data when gamma < 10^-2)
--I've typically considered gamma \in [0.1, 10]
+-Smaller gamma means slower memory dynamics, so one may have to increase T to compensate (very computationally expensive to collect statistically significant data when gamma < 10^-2)
 -gamma = 1 corresponds to comparable memory and spin timescales
+-gamma \in [0.01, 10] used in our study
 
-general_params[2] : delta (spin dynamics parameter)
+delta: Spin dynamics parameter
 -float
 -delta \in (0.5, 1) required for non-trivial dynamics
+-delta = 0.75 used in our study
 
-general_params[3] : zeta (spin dynamics parameter)
+g: Spin dynamics parameter
 -float
--zeta > 1 for non-trivial dynamics, but should be kept of order 1 when studying the relationship between gamma and J_{I, j}, the spin and memory inverse timescales (as to not introduce an additional, distinct timescale)
+-g > 1 for non-trivial dynamics, but should be kept of order 1 when studying the relationship between gamma and J_{I, j}, the spin and memory inverse timescales (as to not introduce an additional, distinct timescale)
+-g = 2.0 used in our study
 
-general_params[4] : Initial memory (uniform across all spins)
+xini: Initial memory (uniform across all spins)
 -float
 -I've almost always kept xini = 0.5
 
-general_params[5] : Total physical simulation time
+
+subdirectory: Subdirectory name (where simulation data will be stored)
+-string
+-Directory will be created if it doesn't already exist
+
+num_instances: Number of instances in this ensemble
+-integer
+
+check_initialization: Parameter allowing for the randomized J_{i, j} interactions and initial spin configurations to be saved as .jpg's
+-boolean
+
+spin_tracker: Parameter which checks how many spins are within [-0.5, 0.5] at each simulation timestep
+-boolean
+-If no spins are designated as "interesting" (i.e. \in [-0.5, 0.5]) at any timestep, the simulation is immediately stopped
+-This feature is most useful in smaller (sz < [16, 16]) cases when equilibria may be found in time t < T
+-Slightly slows down simulation, so is not recommended in larger instances when an equilibrium is not expected to be found
+
+num_of_spins: Number of spins plotted in spin dynamics plot
+-integer
+-The selection of which spins will be plotted is randomized
+
+movie: Parameter which designates if a movie (an image at each simulation timestep) is to be made characterizing the spins' evolution and the distribution of spin flips
+-boolean
+-Can be helpful to visualize the evolution of spins
+-Takes additional storage and runtime (up by a factor of 2-4). Be wary of using it in more computationally expensive cases
+
+time_ranges_list: List of time ranges over which avalanches will be separately extracted
+-list of pairs of integers (e.g. [[0, 4], [4, 16], [16, 64], [64, 200]])
+-Useful to establish the attractiveness of the LRO phase
+
+fit: Fits ensemble-averaged avalanche distribution to a scale-free or Gaussian distribution
+-'sf' for scale-free, 'g' for Gaussian, or anything else for no fit
+
+fsscaling: Parameter which determines if a finite-size scaling analysis is to be performed on the avalanche distributions
+-boolean
+
+
+T: Total physical simulation time
 -integer
 -Must be increased as gamma (inverse dynamic memory timescale) is decreased
 
-general_params[6] : Simulation timestep
+dt: Simulation timestep
 -float
 -Time after which dynamic spin and memory variables are updated during the simulation (via Euler method)
--0.25 is about the coarsest timestep I could get, while still preserving the smoothness of spin evolution profiles
+-0.25 is about the coarsest timestep I could use while still preserving the smoothness of spin evolution profiles. Be wary of using anything larger than this
 
-general_params[7] : Transient duration
+transient: Transient duration
 -integer or float
 -Manual cutoff (in physical time) at which one dictates the transient is over, and spin/avalanche data can begin being collected
 -Is on the order of gamma^-1 (e.g., for gamma = 0.1, I noticed the transient ended around 20)
 
-general_params[8] : Primary directory name
--string
--Names the subdirectory where simulation data will be stored
--Directory will be created if it doesn't already exist
-
-num_instances : Number of instances in ensemble
+plot_duration: Duration over which spin dynamics are plotted
 -integer
+-May be useful for this to be less than T for long instances or for high-frequency spin dynamics
 
-
-check_initialization : Parameter allowing for the randomized J_{i, j} interactions and initial spin configurations to be saved as .jpg's
--boolean
-
-spin_tracker : Parameter which checks how many spins are within [-0.5, 0.5] at each simulation timestep
--boolean
--If no spins are designated as "interesting" (i.e. \in [-0.5, 0.5]) at any timestep, the simulation is immediately stopped
--This feature is most useful in smaller (sz < [32, 32]) cases when equilibria may be found in time t < T
--Slightly slows down simulation, so is not recommended in larger instances when an equilibrium is not expected to be found
-
-
-num_of_spins : Number of spins plotted in spin dynamics plot
--integer
--The selection of which spins will be plotted is randomized
-
-plot_duration : Duration over which spin dynamics are plotted
--integer
--May be useful for this to be less than T for long instances
-
-
-time_window : Physical time after which spin flips (adjacent to recently flipped spins in an avalanche) are no longer considered to be part of that previous avalanche
+time_window: Physical time after which spin flips (adjacent to recently flipped spins in an avalanche) are no longer considered to be part of that previous avalanche
 -float
--E.g. A spin at [4, 5], part of a particular avalanche, flips at time t. If a spin at [3, 5], [5, 5], [4, 4], or [4, 6] flips before time t + time_window, we consider the more recent flip to be induced by the previous flip, and thus, it joins that avalanche. If this flip happens later, we it to be a new avalanche altogether
--Tuning this parameter
--I've kept this ~10-20 * dt (simulation timestep, yields something of order gamma^-1 for typical gamma)
+-E.g. A spin at [4, 5], part of a particular avalanche, flips at time t. If a spin at [3, 5], [5, 5], [4, 4], or [4, 6] flips before time t + time_window, we consider the more recent flip to be induced by the previous flip, and thus, it joins that avalanche. If this flip happens later, we consider it to be a new avalanche altogether
+-time_window ~10-20 * dt gives LRO behavior for gamma \in [0.15, 0.40]
+-This parameter will be need to be tuned based on gamma
 
-flip_axis : Axis about which spins are considered as "flipping", for avalanche collection purposes
+
+alpha: Finite-size scaling analysis parameter
 -float
--Typically set to 0.0, except in niche cases where spin oscillations about axes other than 0.0 are to be investigated
+-To be changed manually based on the quality of the previous scaling guess
 
-movie : Parameter which designates if a movie (an image at each simulation timestep) is to be made characterizing the spins' evolution and the distribution of spin flips
--boolean
--Can be helpful to visualize the evolution of spins
--Takes additional storage and runtime (up by a factor of 2-4). Be wary to use in more computationally expensive cases
-
-fit : Fits ensemble-averaged avalanche distribution to a scale-free or gaussian distribution
--'sf' for scale-free, 'g' for gaussian, or anything else for no fit
-
-
-common_general_params = general_params[1:] (since size is the one thing not common to all ensembles)
-
-finite_size[0] : Parameter which checks if a finite-size scaling analysis is to be performed
--boolean
-
-finite_size[1]: alpha (in finite-size scaling analysis)
+beta: Finite-size scaling analysis parameter
 -float
--To be changed manually based on quality of previous scaling guess
-
-finite_size[2] : beta (in finite-size scaling analysis)
--float
--To be changed manually based on quality of previous scaling guess
+-To be changed manually based on the quality of the previous scaling guess
 #####################################################################################################
