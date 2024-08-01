@@ -5,18 +5,19 @@ from data_extraction import *
 from data_plotting import *
 from avalanche_extraction import *
 from avalanche_plotting import *
+#from memory_correlations import *
 
 ##########################PARAMETERS THAT CAN BE CHANGED ON A SIMULATION-BY-SIMULATION BASIS#########################
 #PRIMARY SIMULATION PARAMETERS
-size_list = [[16, 16], [32, 32], [64, 64]]
-gamma = 0.25
+size_list = [[16, 16], [32, 32]]
+gamma = 0.4
 delta = 0.75
 g = 2.0
 xini = 0.5
 
 #SECONDARY SIMULATION PARAMETERS
 #Miscellanous parameters
-subdirectory = 'DATA_RAW'
+subdirectory = 'DATA_MEM'
 num_instances = 100
 #Spin dynamics parameters
 check_initialization = False
@@ -81,21 +82,28 @@ for sz in size_list:
 
         spin_dynamics(general_params, check_initialization, spin_tracker, i) #simulates dynamics
         spin, final_time = data_extraction(general_params, str(i)) #extracts spin evolutions
+        memory_up, final_time = data_extraction(general_params, str(i) + 'MemUp') #extracts memory evolutions (invoking J_{i j} i<->j symmetry)
+        memory_right, final_time = data_extraction(general_params, str(i) + 'MemRight')
+        memory = np.stack((memory_up, memory_right), axis=-1)
         if i <= 5:
-            memory_up, final_time = data_extraction(general_params, str(i) + 'MemUp') #extracts memory evolutions (invoking J_{i j} i<->j symmetry)
-            memory_right, final_time = data_extraction(general_params, str(i) + 'MemRight')
             data_plotting(general_params, spin, memory_up, memory_right, num_spins, plot_duration, final_time, i) #plots spin and memory dynamics for a few instances
-        avalanche_extraction(general_params, spin, time_window, movie, i) #extracts avalanche distributions from T_min=transient to T_max=T from spin evolutions
+        avalanche_extraction(general_params, spin, time_window, movie, i, 'spin') #extracts avalanche distributions from T_min=transient to T_max=T from spin evolutions
+        avalanche_extraction(general_params, memory, time_window, movie, i, 'memory')
 
-        ###for time_range in time_ranges_list:
-            ###avalanche_extraction(general_params, spin, time_window, movie, i, time_range[0], time_range[1]) #extracts avalanche distributions over different time ranges
+        '''for time_range in time_ranges_list:
+            avalanche_extraction(general_params, spin, time_window, movie, i, 'spin', time_range[0], time_range[1]) #extracts avalanche distributions over different time ranges
+            avalanche_extraction(general_params, memory, time_window, movie, i, 'memory', time_range[0], time_range[1])'''
 
-    ###attractive_lro_plot(general_params, time_ranges_list, time_window, fit) #plots avalanche distributions over different time ranges (to show attractiveness of LRO phase)
+    #attractive_lro_plot(general_params, time_ranges_list, time_window, fit, 'spin') #plots avalanche distributions over different time ranges (to show attractiveness of LRO phase)
+    #attractive_lro_plot(general_params, time_ranges_list, time_window, fit, 'memory')
+    #####memory_correlations(general_params, all_memories)
 
-    avalanche_plotting(general_params, time_window, fit) #plots avalanche distribution for a single size
+    avalanche_plotting(general_params, time_window, fit, 'spin') #plots avalanche distribution for a single size
+    avalanche_plotting(general_params, time_window, fit, 'memory')
 
 
-common_general_params = general_params[1:]
+'''common_general_params = general_params[1:]
 finite_size_params = [fsscaling, alpha, beta]
 
-plot_all_avalanches(size_list, common_general_params, time_window, fit, finite_size_params) #plots avalanche distributions over different sizes (to show persistence of LRO phase in thermodynamic limit)
+plot_all_avalanches(size_list, common_general_params, time_window, fit, finite_size_params, 'spin') #plots avalanche distributions over different sizes (to show persistence of LRO phase in thermodynamic limit)
+plot_all_avalanches(size_list, common_general_params, time_window, fit, finite_size_params, 'memory')'''

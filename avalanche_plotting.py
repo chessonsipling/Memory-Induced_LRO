@@ -74,7 +74,7 @@ def single_avalanche_plot(param_string, characterizing_text, fit):
 
 #Plots avalanche size distributions in a particular ensemble, along with fits (optional)
 #Requires parameters describing how avalanche extraction ocurred (time_window)
-def avalanche_plotting(general_params, time_window, fit, T_min=None, T_max=None):
+def avalanche_plotting(general_params, time_window, fit, data_type, T_min=None, T_max=None):
 
     #Some formatting specfications (can be adjusted/added to)
     params = {'font.size':22,
@@ -93,7 +93,7 @@ def avalanche_plotting(general_params, time_window, fit, T_min=None, T_max=None)
     if T_max == None:
         T_max = T
 
-    characterizing_text = 'time_window' + str(time_window) + '_' + str(T_min) + '_to_' + str(T_max)
+    characterizing_text = data_type + '_time_window' + str(time_window) + '_' + str(T_min) + '_to_' + str(T_max)
 
     #Extracts the x and y data from .txt files, performing fit if desired
     bin_centers, hist = single_avalanche_plot(param_string, characterizing_text, fit)
@@ -106,12 +106,12 @@ def avalanche_plotting(general_params, time_window, fit, T_min=None, T_max=None)
     if fit != 'g': #does not set axes to log-log iff the fit is to a gaussian
         plt.xscale('log')
         plt.yscale('log')
-    plt.savefig(param_string + '/avalanche_distrb_' + characterizing_text + '.jpg')
+    plt.savefig(param_string + '/avalanche_distrb_' + characterizing_text + '.jpg', dpi=600)
     plt.clf()
 
 
 #Plots multiple avalanche distributions of the same parameters on top of one another, but with avalanche extraction happening over different times during the dynamics
-def attractive_lro_plot(general_params, time_ranges_list, time_window, fit):
+def attractive_lro_plot(general_params, time_ranges_list, time_window, fit, data_type):
 
     #Some formatting specfications (can be adjusted/added to)
     params = {'font.size':16,
@@ -125,7 +125,7 @@ def attractive_lro_plot(general_params, time_ranges_list, time_window, fit):
 
     sz, gamma, delta, zeta, xini, T, dt, transient, param_string = param_unwrapper(general_params)
     for i in range(len(time_ranges_list)):
-        characterizing_text = 'time_window' + str(time_window) + '_' + str(time_ranges_list[i][0]) + '_to_' + str(time_ranges_list[i][1])
+        characterizing_text = data_type + '_time_window' + str(time_window) + '_' + str(time_ranges_list[i][0]) + '_to_' + str(time_ranges_list[i][1])
 
         #Extracts the x and y data from .txt files, performing fit if desired
         if i == len(time_ranges_list) - 1: #only fits last distribution in time_ranges_list (which should be the "most" scale-free)
@@ -142,14 +142,14 @@ def attractive_lro_plot(general_params, time_ranges_list, time_window, fit):
     if fit != 'g': #does not set axes to log-log iff the fit is to a gaussian
         plt.xscale('log')
         plt.yscale('log')
-    plt.savefig(param_string + '/avalanche_distrb_time_window' + str(time_window) + '_attractiveLRO' '.jpg', dpi=600)
+    plt.savefig(param_string + '/avalanche_distrb_' + data_type + '_time_window' + str(time_window) + '_attractiveLRO' '.jpg', dpi=600)
     plt.clf()
 
 
 #Plots a list of avalanches distributions simultaneously, along with fits (both optional)
 #Also can perform a scale-invariance analysis, provided the appropriate scaling exponents (typically "alpha" and "beta") are provided
 #Currently, only allows for different sizes to be compared
-def plot_all_avalanches(size_list, common_general_params, time_window, fit, finite_size_params, T_min=None, T_max=None):
+def plot_all_avalanches(size_list, common_general_params, time_window, fit, finite_size_params, data_type, T_min=None, T_max=None):
 
     #Some formatting specfications (can be adjusted/added to)
     params = {'font.size':26,
@@ -174,7 +174,7 @@ def plot_all_avalanches(size_list, common_general_params, time_window, fit, fini
 
     #Organizes parameters which are common to all ensembles (excluding size) into useful strings
     common_general_string = 'g' + str(common_general_params[0]) + '_d' + str(common_general_params[1]) + '_z' + str(common_general_params[2]) + '_x' + str(common_general_params[3]) + '_T' + str(common_general_params[4]) + '_dt' + str(common_general_params[5])
-    characterizing_text = 'time_window' + str(time_window) + '_' + str(T_min) + '_to_' + str(T_max)
+    characterizing_text = data_type + '_time_window' + str(time_window) + '_' + str(T_min) + '_to_' + str(T_max)
 
     #Tries to make the necessary directory, if it does not exist
     try:
