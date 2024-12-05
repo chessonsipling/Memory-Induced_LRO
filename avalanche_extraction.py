@@ -145,7 +145,7 @@ def get_spin_flips(data, t, data_type):
     elif data_type=='memory':
         memory_derivs_above = np.sign(np.subtract(data[t+1], data[t-1]))
         memory_derivs_below = np.sign(np.subtract(data[t], data[t-2]))
-        spin_flips = np.where(np.multiply(memory_derivs_above, memory_derivs_below) < 0, 1, 0) #<<<LOOK BACK AT THIS (I DON'T THINK IT'S RIGHT)
+        spin_flips = np.where(np.multiply(memory_derivs_above, memory_derivs_below) < 0, 1, 0)
 
     return spin_flips
 

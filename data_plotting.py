@@ -14,7 +14,7 @@ def data_plotting(general_params, spin, memory_up, memory_right, num_spins, plot
         'figure.figsize':[6.4, 4.8],
         'text.usetex':True,
         'font.family':'serif',
-        'font.serif':['Computer Modern Serif']}
+        'font.serif':['Times New Roman']}
     plt.rcParams.update(params)
     plt.subplots_adjust(bottom=0.15, left=0.15)
 
@@ -45,7 +45,7 @@ def data_plotting(general_params, spin, memory_up, memory_right, num_spins, plot
           'figure.figsize':[8.0, 5.0],
           'text.usetex':True,
           'font.family':'serif',
-          'font.serif':['Computer Modern Serif']}
+          'font.serif':['Times New Roman']}
     plt.rcParams.update(params)
     plt.subplots_adjust(bottom=0.25, left=0.15)
 

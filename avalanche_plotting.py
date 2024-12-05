@@ -2,6 +2,7 @@ import numpy as np
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 import os
+import torch
 
 from get_string import get_sz_string
 from distribution import *
@@ -9,12 +10,20 @@ from param_unwrapper import *
 
 #Reads avalanche distribution data from a .txt file and returns it as useful x and y data, to be plotted
 #Also, plots scale-free/gaussian fits, if desired
-def single_avalanche_plot(param_string, characterizing_text, fit):
+def single_avalanche_plot(L, window_length, param_string, characterizing_text, data_type, fit):
 
-    #Opens the corresponding avalanche distribution file and extracts this data to a list
-    avalanche_file = open(param_string + '/avalanche_distrb_' + characterizing_text + '.txt', 'r')
-    avalanche_sizes = avalanche_file.readlines()
-    avalanche_sizes = [int(element) for element in avalanche_sizes]
+    if data_type == "spin":
+        #Opens the corresponding avalanche distribution file and extracts this data to a list
+        avalanche_file = open(param_string + '/avalanche_distrb_' + characterizing_text + '.txt', 'r')
+        avalanche_sizes = avalanche_file.readlines()
+        avalanche_sizes = [int(element) for element in avalanche_sizes]
+    elif data_type == "memory":
+        save_string = f'{L}_{window_length}_250'
+        avalanche_sizes = torch.load(f'{param_string}/cluster_sizes_{save_string}.pt', map_location=torch.device('cpu')) #for memory variables, which are saved to .pt files
+        avalanche_sizes = avalanche_sizes.cpu().numpy()
+        avalanche_sizes = avalanche_sizes.tolist()
+        avalanche_sizes = [int(size) for size in avalanche_sizes]
+    #print(avalanche_sizes)
 
     #Stops if there are no avalanches to plot
     if avalanche_sizes == []:
@@ -81,7 +90,7 @@ def avalanche_plotting(general_params, time_window, fit, data_type, T_min=None, 
           'legend.loc': 'upper right',
           'text.usetex':True,
           'font.family':'serif',
-          'font.serif':['Computer Modern Serif']}
+          'font.serif':['Times New Roman']}
     plt.rcParams.update(params)
     plt.subplots_adjust(bottom=0.25, left=0.25)
 
@@ -96,7 +105,7 @@ def avalanche_plotting(general_params, time_window, fit, data_type, T_min=None, 
     characterizing_text = data_type + '_time_window' + str(time_window) + '_' + str(T_min) + '_to_' + str(T_max)
 
     #Extracts the x and y data from .txt files, performing fit if desired
-    bin_centers, hist = single_avalanche_plot(param_string, characterizing_text, fit)
+    bin_centers, hist = single_avalanche_plot(sz[0], time_window, param_string, characterizing_text, data_type, fit)
 
     plt.scatter(bin_centers, hist, label='Data')
 
@@ -119,7 +128,7 @@ def attractive_lro_plot(general_params, time_ranges_list, time_window, fit, data
           'legend.loc': 'upper right',
           'text.usetex':True,
           'font.family':'serif',
-          'font.serif':['Computer Modern Serif']}
+          'font.serif':['Times New Roman']}
     plt.rcParams.update(params)
     plt.subplots_adjust(bottom=0.25, left=0.25)
 
@@ -129,9 +138,9 @@ def attractive_lro_plot(general_params, time_ranges_list, time_window, fit, data
 
         #Extracts the x and y data from .txt files, performing fit if desired
         if i == len(time_ranges_list) - 1: #only fits last distribution in time_ranges_list (which should be the "most" scale-free)
-            bin_centers, hist = single_avalanche_plot(param_string, characterizing_text, fit)
+            bin_centers, hist = single_avalanche_plot(sz[0], time_window, param_string, characterizing_text, data_type, fit)
         else:
-            bin_centers, hist = single_avalanche_plot(param_string, characterizing_text, False)
+            bin_centers, hist = single_avalanche_plot(sz[0], time_window, param_string, characterizing_text, data_type, False)
 
         plt.scatter(bin_centers, hist, label=r'$T \in [%d, %d)$' % (time_ranges_list[i][0], time_ranges_list[i][1]))
 
@@ -156,7 +165,7 @@ def plot_all_avalanches(size_list, common_general_params, time_window, fit, fini
           'legend.loc': 'lower left',
           'text.usetex':True,
           'font.family':'serif',
-          'font.serif':['Computer Modern Serif']}
+          'font.serif':['Times New Roman']}
     plt.rcParams.update(params)
     plt.subplots_adjust(bottom=0.25, left=0.25)
 
@@ -189,11 +198,11 @@ def plot_all_avalanches(size_list, common_general_params, time_window, fit, fini
         #Extracts the x and y data from .txt files, performing fit if desired
         if fit == 'sf':
             if sz == size_list[-1]:
-                bin_centers, hist = single_avalanche_plot(get_param_string(sz, common_general_params[0], common_general_params[1], common_general_params[2], common_general_params[3], common_general_params[4], common_general_params[5], common_general_params[7]), characterizing_text, fit)
+                bin_centers, hist = single_avalanche_plot(sz[0], time_window, get_param_string(sz, common_general_params[0], common_general_params[1], common_general_params[2], common_general_params[3], common_general_params[4], common_general_params[5], common_general_params[7]), characterizing_text, data_type, fit)
             else:
-                bin_centers, hist = single_avalanche_plot(get_param_string(sz, common_general_params[0], common_general_params[1], common_general_params[2], common_general_params[3], common_general_params[4], common_general_params[5], common_general_params[7]), characterizing_text, False)
+                bin_centers, hist = single_avalanche_plot(sz[0], time_window, get_param_string(sz, common_general_params[0], common_general_params[1], common_general_params[2], common_general_params[3], common_general_params[4], common_general_params[5], common_general_params[7]), characterizing_text, data_type, False)
         else:
-            bin_centers, hist = single_avalanche_plot(get_param_string(sz, common_general_params[0], common_general_params[1], common_general_params[2], common_general_params[3], common_general_params[4], common_general_params[5], common_general_params[7]), characterizing_text, fit)
+            bin_centers, hist = single_avalanche_plot(sz[0], time_window, get_param_string(sz, common_general_params[0], common_general_params[1], common_general_params[2], common_general_params[3], common_general_params[4], common_general_params[5], common_general_params[7]), characterizing_text, data_type, fit)
 
         plt.scatter(bin_centers, hist, label=get_sz_string(sz)) #label=r'$%d^2$' % sz[0]
 

@@ -1,7 +1,7 @@
 import os
 from shutil import copytree, ignore_patterns
 
-raw_direc = 'DATA_RAW'
+raw_direc = 'DATA'
 filtered_direc = 'DATA_FILTERED'
 
 #Copies over every *.jpg (spin evolution profile, avalanche distribution plot, comparative avalanche distribution plot, and any other misc images) and other avalanche distribution .txt files (which don't fall into the ignorable pattern) to the corresponding directory in 'DATA, FILTERED'
@@ -16,7 +16,7 @@ for subdirec in os.listdir(working_direc + '/' + raw_direc):
     if subdirec[0:2] == 'sz': #only considers directories of a particular size (others have no '?.txt' files)
         for file in os.listdir(working_direc + '/' + raw_direc + '/' + subdirec):
             if len(file[:-4]) <= 4 and file[-4:] == '.txt': #filters for '?.txt', '??.txt', '???.txt', or '????.txt' files
-            	num_of_instances += 1
+                num_of_instances += 1
     ###print(subdirec + ' contains ' + str(num_of_instances) + ' instances')
 
         instance_num_file = open(working_direc + '/' + filtered_direc + '/' + subdirec + '/instance_num.txt', 'w')
