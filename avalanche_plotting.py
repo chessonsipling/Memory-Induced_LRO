@@ -229,7 +229,7 @@ def plot_all_avalanches(size_list, common_general_params, time_window, fit, fini
 
         plt.xlabel(r'~$s/L^{%0.2f}$' % float(2*finite_size_params[2]))
         #plt.xlabel('s')
-        plt.ylabel(r'~$s^{-%0.2f}$P(s)' % finite_size_params[1])
+        plt.ylabel(r'~$s^{%0.2f}$P(s)' % finite_size_params[1])
         plt.xscale('log')
         plt.yscale('log')
         plt.savefig(common_general_params[7] + '/' + common_general_string + '/' + characterizing_text + '_finite_size.jpg',  dpi=600)
