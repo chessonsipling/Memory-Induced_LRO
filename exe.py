@@ -65,7 +65,7 @@ for j, gamma in enumerate(gamma_list):
                  1e-1: [1.77, 1.00],
                  0.15: [2.12, 1.00],
                  0.25: [1.97, 1.00],
-                 0.4: [2.02, 1.00],
+                 0.4: [2.02, 1.00], #[2.25, 0.73] #(second sf params for memory avalanche distributions)
                  1: [1.98, 0.0],
                  1e1: [3.80, 0.0]} #some gamma-dependent parameter estimates based on previous simulations (SLIGHT CHANGES MAY YIELD BETTER RESULTS)
 
